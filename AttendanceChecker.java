@@ -1,4 +1,6 @@
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.*;
@@ -6,10 +8,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
-/**
- * Attendance Tracker Application
- * LAB Work 1 (Enhanced Version)
- */
 public class AttendanceTracker {
 
     private static JTextField timeField;
@@ -17,29 +15,54 @@ public class AttendanceTracker {
     public static void main(String[] args) {
 
         JFrame frame = new JFrame("Attendance Tracker");
-        frame.setSize(500, 380);
+        frame.setSize(650, 450);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLocationRelativeTo(null);
 
-        // Optional window icon
-        try {
-            frame.setIconImage(new ImageIcon("icon.png").getImage());
-        } catch (Exception ignored) {}
+        // Gradient background
+        GradientPanel root = new GradientPanel();
+        root.setLayout(new GridBagLayout());
 
-        JPanel panel = new JPanel(new GridLayout(7, 2, 10, 10));
-        panel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
-        panel.setBackground(new Color(235, 245, 250)); // Pastel blue
+        JPanel card = new JPanel();
+        card.setPreferredSize(new Dimension(480, 340));
+        card.setBackground(Color.WHITE);
+        card.setBorder(new LineBorder(new Color(220, 220, 220), 1, true));
+        card.setLayout(new BorderLayout(10, 10));
+        card.setOpaque(true);
 
-        Font font = new Font("SansSerif", Font.PLAIN, 14);
+        // Header
+        JPanel header = new JPanel(new GridLayout(2, 1));
+        header.setOpaque(false);
+        header.setBorder(new EmptyBorder(15, 15, 5, 15));
 
-        JLabel nameLabel = new JLabel("Attendance Name:");
+        JLabel title = new JLabel("Attendance System");
+        title.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        title.setHorizontalAlignment(SwingConstants.CENTER);
+
+        JLabel subtitle = new JLabel("Laboratory Attendance Tracker");
+        subtitle.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        subtitle.setForeground(Color.GRAY);
+        subtitle.setHorizontalAlignment(SwingConstants.CENTER);
+
+        header.add(title);
+        header.add(subtitle);
+
+        // Form panel
+        JPanel form = new JPanel(new GridLayout(4, 2, 10, 10));
+        form.setBorder(new EmptyBorder(10, 20, 10, 20));
+        form.setOpaque(false);
+
+        Font labelFont = new Font("Segoe UI", Font.PLAIN, 13);
+
+        JLabel nameLabel = new JLabel("Full Name:");
         JLabel courseLabel = new JLabel("Course / Year:");
         JLabel timeLabel = new JLabel("Time In:");
         JLabel signatureLabel = new JLabel("E-Signature:");
 
-        nameLabel.setFont(font);
-        courseLabel.setFont(font);
-        timeLabel.setFont(font);
-        signatureLabel.setFont(font);
+        nameLabel.setFont(labelFont);
+        courseLabel.setFont(labelFont);
+        timeLabel.setFont(labelFont);
+        signatureLabel.setFont(labelFont);
 
         JTextField nameField = new JTextField();
         JTextField courseField = new JTextField();
@@ -50,18 +73,24 @@ public class AttendanceTracker {
         signatureField.setEditable(false);
 
         updateTime();
-
-        // Auto-refresh time every 60 seconds
-        Timer timer = new Timer(60000, e -> updateTime());
-        timer.start();
-
         signatureField.setText(UUID.randomUUID().toString());
 
-        JButton submitBtn = new JButton("Submit Attendance");
-        JButton viewBtn = new JButton("View Records");
+        form.add(nameLabel);
+        form.add(nameField);
+        form.add(courseLabel);
+        form.add(courseField);
+        form.add(timeLabel);
+        form.add(timeField);
+        form.add(signatureLabel);
+        form.add(signatureField);
 
-        submitBtn.setBackground(new Color(200, 230, 200)); // Pastel green
-        viewBtn.setBackground(new Color(230, 210, 250)); // Pastel purple
+        // Buttons
+        JPanel buttons = new JPanel(new GridLayout(1, 2, 15, 0));
+        buttons.setBorder(new EmptyBorder(5, 20, 15, 20));
+        buttons.setOpaque(false);
+
+        JButton submitBtn = new RoundedButton("Submit Attendance", new Color(72, 149, 239));
+        JButton viewBtn = new RoundedButton("View Records", new Color(123, 97, 255));
 
         submitBtn.addActionListener((ActionEvent e) -> {
             saveAttendance(
@@ -70,8 +99,11 @@ public class AttendanceTracker {
                     timeField.getText(),
                     signatureField.getText()
             );
+
             JOptionPane.showMessageDialog(frame,
-                    "Attendance Submitted Successfully!");
+                    "Attendance recorded successfully!",
+                    "Success",
+                    JOptionPane.INFORMATION_MESSAGE);
 
             nameField.setText("");
             courseField.setText("");
@@ -81,75 +113,99 @@ public class AttendanceTracker {
 
         viewBtn.addActionListener(e -> viewRecords());
 
-        panel.add(nameLabel);
-        panel.add(nameField);
-        panel.add(courseLabel);
-        panel.add(courseField);
-        panel.add(timeLabel);
-        panel.add(timeField);
-        panel.add(signatureLabel);
-        panel.add(signatureField);
-        panel.add(submitBtn);
-        panel.add(viewBtn);
+        buttons.add(submitBtn);
+        buttons.add(viewBtn);
 
-        frame.add(panel);
+        card.add(header, BorderLayout.NORTH);
+        card.add(form, BorderLayout.CENTER);
+        card.add(buttons, BorderLayout.SOUTH);
+
+        root.add(card);
+        frame.setContentPane(root);
         frame.setVisible(true);
+
+        // Auto-refresh time
+        new Timer(60000, e -> updateTime()).start();
     }
 
-    /**
-     * Updates the Time In field
-     */
     private static void updateTime() {
         DateTimeFormatter formatter =
-                DateTimeFormatter.ofPattern("MM/dd/yyyy hh:mm a");
+                DateTimeFormatter.ofPattern("MMMM dd, yyyy  hh:mm a");
         timeField.setText(LocalDateTime.now().format(formatter));
     }
 
-    /**
-     * Saves attendance to CSV file
-     */
     private static void saveAttendance(String name, String course,
                                        String time, String signature) {
-        try (FileWriter writer =
-                     new FileWriter("attendance_records.csv", true)) {
-
-            // Add header if file is empty
+        try (FileWriter writer = new FileWriter("attendance_records.csv", true)) {
             File file = new File("attendance_records.csv");
             if (file.length() == 0) {
                 writer.write("Name,Course/Year,Time In,E-Signature\n");
             }
-
             writer.write(name + "," + course + "," + time + "," + signature + "\n");
-
         } catch (IOException ex) {
             ex.printStackTrace();
         }
     }
 
-    /**
-     * Displays attendance records in a new window
-     */
     private static void viewRecords() {
         JFrame viewFrame = new JFrame("Attendance Records");
-        viewFrame.setSize(600, 400);
+        viewFrame.setSize(700, 420);
+        viewFrame.setLocationRelativeTo(null);
 
         JTextArea textArea = new JTextArea();
+        textArea.setFont(new Font("Consolas", Font.PLAIN, 13));
         textArea.setEditable(false);
 
         try (BufferedReader reader =
                      new BufferedReader(new FileReader("attendance_records.csv"))) {
-
             String line;
             while ((line = reader.readLine()) != null) {
-                textArea.append(line + "\n");
+                textArea.append(line.replace(",", "   |   ") + "\n");
             }
-
         } catch (IOException e) {
-            textArea.setText("No records found.");
+            textArea.setText("No attendance records found.");
         }
 
-        JScrollPane scrollPane = new JScrollPane(textArea);
-        viewFrame.add(scrollPane);
+        viewFrame.add(new JScrollPane(textArea));
         viewFrame.setVisible(true);
+    }
+
+    // ===== Custom UI Components =====
+
+    static class GradientPanel extends JPanel {
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            Graphics2D g2 = (Graphics2D) g;
+            g2.setPaint(new GradientPaint(0, 0,
+                    new Color(224, 242, 254),
+                    0, getHeight(),
+                    new Color(186, 230, 253)));
+            g2.fillRect(0, 0, getWidth(), getHeight());
+        }
+    }
+
+    static class RoundedButton extends JButton {
+        private final Color color;
+
+        RoundedButton(String text, Color color) {
+            super(text);
+            this.color = color;
+            setForeground(Color.WHITE);
+            setFocusPainted(false);
+            setBorderPainted(false);
+            setFont(new Font("Segoe UI", Font.BOLD, 13));
+            setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g;
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(color);
+            g2.fillRoundRect(0, 0, getWidth(), getHeight(), 30, 30);
+            super.paintComponent(g);
+        }
     }
 }
