@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Records System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-wrapper">
+        <aside class="sidebar">
+            <h2>Registration</h2>
+            <form id="studentForm">
+                <input type="text" id="id" placeholder="Student ID" required>
+                <input type="text" id="fn" placeholder="First Name" required>
+                <input type="text" id="ln" placeholder="Last Name" required>
+                <div class="grade-inputs">
+                    <input type="number" id="l1" placeholder="Lab 1" min="0" max="100" required>
+                    <input type="number" id="l2" placeholder="Lab 2" min="0" max="100" required>
+                    <input type="number" id="l3" placeholder="Lab 3" min="0" max="100" required>
+                    <input type="number" id="p" placeholder="Prelim" min="0" max="100" required>
+                    <input type="number" id="a" placeholder="Att." min="0" max="100" required>
+                </div>
+                <button type="submit" class="btn-save">Save Record</button>
+            </form>
+        </aside>
+
+        <main class="main-content">
+            <header class="table-header">
+                <h1>Academic Database</h1>
+                <div id="stats">Total Students: 0</div>
+            </header>
+            <div class="scroll-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID Number</th>
+                            <th>Name</th>
+                            <th>L1</th><th>L2</th><th>L3</th>
+                            <th>Pre</th><th>Att</th>
+                            <th>Average</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
